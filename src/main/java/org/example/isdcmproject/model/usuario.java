@@ -14,7 +14,15 @@ public class usuario {
     private static final String CLIENT_DRIVER = "org.apache.derby.jdbc.ClientDriver";
     private static final String EMBEDDED_DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
     private static final String NETWORK_URL = "jdbc:derby://localhost:1527/pr2;create=true";
-    private static final String EMBEDDED_URL = "jdbc:derby:pr2;create=true";
+    private static final String EMBEDDED_URL = "jdbc:derby:/Users/zhiweilin/MEI/ISDCM/Project/pr2;create=true";
+
+    public enum CreateUserResult {
+        SUCCESS,
+        USERNAME_TAKEN,
+        EMAIL_TAKEN,
+        DATABASE_ERROR,
+        ERROR
+    }
 
     static {
         try {
@@ -32,6 +40,7 @@ public class usuario {
         try {
             return DriverManager.getConnection(NETWORK_URL);
         } catch (SQLNonTransientConnectionException e) {
+            System.out.println("Connection with EMBEDDED_URL ==============================");
             return DriverManager.getConnection(EMBEDDED_URL);
         }
     }
@@ -42,7 +51,7 @@ public class usuario {
                     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                     nombre VARCHAR(80) NOT NULL,
                     apellido VARCHAR(80) NOT NULL,
-                    email VARCHAR(120) NOT NULL,
+                    email VARCHAR(120) NOT NULL UNIQUE,
                     username VARCHAR(50) NOT NULL UNIQUE,
                     password_hash VARCHAR(64) NOT NULL
                 )
@@ -68,9 +77,18 @@ public class usuario {
         }
     }
 
-    public boolean createUser(String nombre, String apellido, String email, String username, String rawPassword) throws SQLException {
+    public CreateUserResult createUser(String nombre, String apellido, String email, String username, String rawPassword) throws SQLException {
+
+        nombre = nombre.toLowerCase();
+        apellido = apellido.toLowerCase();
+        email = email.toLowerCase();
+        username = username.toLowerCase();
+
         if (existsByUsername(username)) {
-            return false;
+            return CreateUserResult.USERNAME_TAKEN;
+        }
+        if (existByEmail(email)) {
+            return CreateUserResult.EMAIL_TAKEN;
         }
         String sql = "INSERT INTO usuarios (nombre, apellido, email, username, password_hash) VALUES (?, ?, ?, ?, ?)";
         try (Connection connection = getConnection();
@@ -80,10 +98,12 @@ public class usuario {
             statement.setString(3, email);
             statement.setString(4, username);
             statement.setString(5, hashPassword(rawPassword));
-            return statement.executeUpdate() == 1;
+            if (statement.executeUpdate() == 1) {
+                return CreateUserResult.SUCCESS;
+            } return CreateUserResult.ERROR;
         } catch (SQLException e) {
             if ("23505".equals(e.getSQLState())) {
-                return false;
+                return CreateUserResult.DATABASE_ERROR;
             }
             throw e;
         }
@@ -112,6 +132,17 @@ public class usuario {
             return builder.toString();
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("No se pudo aplicar hash a la contraseña.", e);
+        }
+    }
+
+    public boolean existByEmail(String email) throws SQLException {
+        String sql = "SELECT 1 FROM usuarios WHERE email = ?";
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, email);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next();
+            }
         }
     }
 }

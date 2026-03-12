@@ -69,7 +69,15 @@ public class servletUsuarios extends HttpServlet {
         handleLogin(request, response);
     }
 
-    private void handleRegister(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void forwardWithError(HttpServletRequest request, HttpServletResponse response, String error)
+            throws ServletException, IOException {
+        request.setAttribute("error", error);
+        request.getRequestDispatcher("/WEB-INF/views/registroUsu.jsp").forward(request, response);
+    }
+
+    private void handleRegister(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
         String nombre = sanitize(request.getParameter("nombre"));
         String apellido = sanitize(request.getParameter("apellido"));
         String email = sanitize(request.getParameter("email"));
@@ -84,25 +92,35 @@ public class servletUsuarios extends HttpServlet {
 
         String error = validateRegisterFields(nombre, apellido, email, username, password, confirmPassword);
         if (error != null) {
-            request.setAttribute("error", error);
-            request.getRequestDispatcher("/WEB-INF/views/registroUsu.jsp").forward(request, response);
+            forwardWithError(request, response, error);
             return;
         }
 
         try {
-            boolean created = usuarioModel.createUser(nombre, apellido, email, username, password);
-            if (!created) {
-                request.setAttribute("error", "El nombre de usuario ya está en uso.");
-                request.getRequestDispatcher("/WEB-INF/views/registroUsu.jsp").forward(request, response);
-                return;
-            }
-        } catch (SQLException e) {
-            request.setAttribute("error", "No fue posible registrar el usuario. Intenta nuevamente.");
-            request.getRequestDispatcher("/WEB-INF/views/registroUsu.jsp").forward(request, response);
-            return;
-        }
+            usuario.CreateUserResult result = usuarioModel.createUser(nombre, apellido, email, username, password);
 
-        response.sendRedirect(request.getContextPath() + "/login?registered=1");
+            switch (result) {
+                case SUCCESS:
+                    response.sendRedirect(request.getContextPath() + "/login?registered=1");
+                    return;
+
+                case USERNAME_TAKEN:
+                    error = "El nombre de usuario ya está en uso.";
+                    break;
+
+                case EMAIL_TAKEN:
+                    error = "El correo electrónico ya está en uso.";
+                    break;
+
+                case DATABASE_ERROR:
+                default:
+                    error = "Ocurrió un error en la base de datos. Inténtalo más tarde.";
+            }
+
+        } catch (SQLException e) {
+            error = "No fue posible registrar el usuario. Intenta nuevamente.";
+        }
+        forwardWithError(request, response, error);
     }
 
     private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
