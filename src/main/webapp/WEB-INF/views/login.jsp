@@ -35,7 +35,7 @@
         .field {
             margin-bottom: 16px;
             text-align: left;
-            margin-right: 16px;
+            margin-right: 20px;
         }
 
         .field label {
