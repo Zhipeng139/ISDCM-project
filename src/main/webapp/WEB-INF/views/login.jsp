@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>Iniciar sessió</title>
     <style>
         /* Reset y estilo general */
         body {
@@ -123,7 +123,7 @@
 </head>
 <body>
 <div class="card">
-    <h2>Iniciar sesión</h2>
+    <h2>Iniciar sessió</h2>
     <% if (request.getAttribute("error") != null) { %>
     <div class="error"><%= request.getAttribute("error") %></div>
     <% } %>
@@ -133,19 +133,20 @@
 
     <form method="post" action="<%= request.getContextPath() %>/login">
         <div class="field">
-            <label for="username">Usuario</label>
+            <label for="username">Usuari</label>
             <input id="username" name="username" type="text" value="${username}" />
         </div>
         <div class="field">
-            <label for="password">Contraseña</label>
+            <label for="password">Contrasenya</label>
             <input id="password" name="password" type="password" />
         </div>
         <div class="actions">
             <button type="submit">Entrar</button>
+
         </div>
     </form>
 
-    <p>¿No tienes cuenta? <a href="<%= request.getContextPath() %>/registroUsu">Registrarse</a></p>
+    <p>No tens compte? <a href="<%= request.getContextPath() %>/registroUsu">Registra't</a></p>
 </div>
 </body>
 </html>

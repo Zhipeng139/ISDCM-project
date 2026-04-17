@@ -146,10 +146,10 @@
 %>
 <div class="card">
     <div class="topbar">
-        <a class="link" href="<%= request.getContextPath() %>/listadoVid">Ver listado</a>
-        <a class="link" href="<%= request.getContextPath() %>/logout">Cerrar sesión</a>
+        <a class="link" href="<%= request.getContextPath() %>/listadoVid">← Tornar al llistat</a>
+        <a class="link" href="<%= request.getContextPath() %>/logout">Tancar sessió</a>
     </div>
-    <h2>Registro de video</h2>
+    <h2>Registre de vídeo</h2>
 
     <% if (request.getAttribute("error") != null) { %>
     <div class="error"><%= request.getAttribute("error") %></div>
@@ -158,29 +158,39 @@
     <form method="post" action="<%= request.getContextPath() %>/registroVid">
         <div class="grid">
             <div class="field">
-                <label for="titulo">Título</label>
+                <label for="titulo">Títol</label>
                 <input id="titulo" name="titulo" type="text" value="<%= form.getOrDefault("titulo", "") %>" />
                 <% if (fieldErrors.get("titulo") != null) { %><div class="fieldError"><%= fieldErrors.get("titulo") %></div><% } %>
             </div>
             <div class="field">
-                <label for="fechaCreacion">Fecha de creación</label>
+                <label for="autor">Autor</label>
+                <input id="autor" name="autor" type="text" value="<%= form.getOrDefault("autor", "") %>" />
+                <% if (fieldErrors.get("autor") != null) { %><div class="fieldError"><%= fieldErrors.get("autor") %></div><% } %>
+            </div>
+            <div class="field">
+                <label for="fechaCreacion">Data de creació</label>
                 <input id="fechaCreacion" name="fechaCreacion" type="date" value="<%= form.getOrDefault("fechaCreacion", "") %>" />
                 <% if (fieldErrors.get("fechaCreacion") != null) { %><div class="fieldError"><%= fieldErrors.get("fechaCreacion") %></div><% } %>
             </div>
             <div class="field">
-                <label for="duracion">Duración (segundos)</label>
+                <label for="duracion">Duració (segons)</label>
                 <input id="duracion" name="duracion" type="number" min="0" value="<%= form.getOrDefault("duracion", "") %>" />
                 <% if (fieldErrors.get("duracion") != null) { %><div class="fieldError"><%= fieldErrors.get("duracion") %></div><% } %>
             </div>
             <div class="field">
-                <label for="reproducciones">Reproducciones</label>
-                <input id="reproducciones" name="reproducciones" type="number" min="0" value="<%= form.getOrDefault("reproducciones", "") %>" />
+                <label for="reproducciones">Reproduccions inicials</label>
+                <input id="reproducciones" name="reproducciones" type="number" min="0" value="<%= form.getOrDefault("reproducciones", "0") %>" />
                 <% if (fieldErrors.get("reproducciones") != null) { %><div class="fieldError"><%= fieldErrors.get("reproducciones") %></div><% } %>
             </div>
             <div class="field">
-                <label for="formato">Formato</label>
-                <input id="formato" name="formato" type="text" value="<%= form.getOrDefault("formato", "") %>" />
+                <label for="formato">Format</label>
+                <input id="formato" name="formato" type="text" placeholder="ex: MP4" value="<%= form.getOrDefault("formato", "") %>" />
                 <% if (fieldErrors.get("formato") != null) { %><div class="fieldError"><%= fieldErrors.get("formato") %></div><% } %>
+            </div>
+            <div class="field">
+                <label for="resolucion">Resolució</label>
+                <input id="resolucion" name="resolucion" type="text" placeholder="ex: 1080p" value="<%= form.getOrDefault("resolucion", "") %>" />
+                <% if (fieldErrors.get("resolucion") != null) { %><div class="fieldError"><%= fieldErrors.get("resolucion") %></div><% } %>
             </div>
             <div class="field full">
                 <label for="url">URL</label>
@@ -188,25 +198,20 @@
                 <% if (fieldErrors.get("url") != null) { %><div class="fieldError"><%= fieldErrors.get("url") %></div><% } %>
             </div>
             <div class="field full">
-                <label for="categoria">Categoría</label>
+                <label for="categoria">Categoria</label>
                 <input id="categoria" name="categoria" type="text" value="<%= form.getOrDefault("categoria", "") %>" />
                 <% if (fieldErrors.get("categoria") != null) { %><div class="fieldError"><%= fieldErrors.get("categoria") %></div><% } %>
             </div>
-            <div class="field">
-                <label for="resolucion">Resolución</label>
-                <input id="resolucion" name="resolucion" type="text" placeholder="1080p" value="<%= form.getOrDefault("resolucion", "") %>" />
-                <% if (fieldErrors.get("resolucion") != null) { %><div class="fieldError"><%= fieldErrors.get("resolucion") %></div><% } %>
-            </div>
             <div class="field full">
-                <label for="descripcion">Descripción</label>
+                <label for="descripcion">Descripció</label>
                 <textarea id="descripcion" name="descripcion"><%= form.getOrDefault("descripcion", "") %></textarea>
                 <% if (fieldErrors.get("descripcion") != null) { %><div class="fieldError"><%= fieldErrors.get("descripcion") %></div><% } %>
             </div>
         </div>
 
         <div class="actions">
-            <a class="link" href="<%= request.getContextPath() %>/listadoVid">Cancelar</a>
-            <button class="button" type="submit">Registrar video</button>
+            <a class="link" href="<%= request.getContextPath() %>/listadoVid">Cancel·lar</a>
+            <button class="button" type="submit">Registrar vídeo</button>
         </div>
     </form>
 </div>

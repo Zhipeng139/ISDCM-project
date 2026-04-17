@@ -1,116 +1,123 @@
 package org.example.isdcmproject.controller;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import jakarta.json.*;
 import jakarta.servlet.ServletException;
+import org.example.isdcmproject.config.RestConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.example.isdcmproject.model.video;
-import org.example.isdcmproject.model.videoRepository;
-import org.example.isdcmproject.model.videoSearchCriteria;
-import org.example.isdcmproject.service.VideoService;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import jakarta.servlet.http.HttpSession;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet(name = "servletListadoVid", urlPatterns = "/listadoVid")
 public class servletListadoVid extends HttpServlet {
+
     private static final Logger LOGGER = Logger.getLogger(servletListadoVid.class.getName());
-    private final videoRepository repository = new videoRepository();
-    private final VideoService videoService = new VideoService();
+    private static final String REST_BASE = RestConfig.BASE_URL + "/videos";
 
     @Override
-    public void init() throws ServletException {
-        try {
-            repository.initializeTable();
-        } catch (SQLException e) {
-            throw new ServletException("No se pudo inicializar la tabla de videos.", e);
-        }
-    }
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String titulo = param(req, "titulo");
+        String autor  = param(req, "autor");
+        String year   = param(req, "year");
+        String month  = param(req, "month");
+        String day    = param(req, "day");
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        boolean hasSearch = !titulo.isBlank() || !autor.isBlank() || !year.isBlank();
+
         try {
-            videoSearchCriteria criteria = extractCriteria(request);
-            request.setAttribute("searchCriteria", criteria);
-            validateCriteria(criteria, request);
-            List<video> videos = videoService.search(criteria);
-            request.setAttribute("videos", videos);
-            request.setAttribute("suggestions", videoService.suggest(criteria.getConsultaLibre()));
-            if ("1".equals(request.getParameter("created"))) {
-                String videoId = sanitize(request.getParameter("videoId"));
-                if (videoId.isBlank()) {
-                    request.setAttribute("success", "Video registrado correctamente.");
-                } else {
-                    request.setAttribute("success", "Video registrado correctamente con ID " + videoId + ".");
-                }
+            String url  = hasSearch ? buildSearchUrl(titulo, autor, year, month, day) : REST_BASE;
+            String json = httpGet(url, apiKey(req));
+            JsonArray arr = Json.createReader(new StringReader(json)).readArray();
+            req.setAttribute("videos", toList(arr));
+
+            if ("1".equals(req.getParameter("created"))) {
+                req.setAttribute("success", "Vídeo registrat correctament.");
             }
-            request.getRequestDispatcher("/WEB-INF/views/listadoVid.jsp").forward(request, response);
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "No fue posible cargar el listado de videos.", e);
-            request.setAttribute("error", "No fue posible cargar el listado de videos.");
-            request.getRequestDispatcher("/WEB-INF/views/listadoVid.jsp").forward(request, response);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error cridant l'API REST", e);
+            req.setAttribute("error", "No s'ha pogut connectar amb el servei REST: " + e.getMessage());
         }
+
+        req.getRequestDispatcher("/WEB-INF/views/listadoVid.jsp").forward(req, resp);
     }
 
-    private videoSearchCriteria extractCriteria(HttpServletRequest request) {
-        videoSearchCriteria criteria = new videoSearchCriteria();
-        criteria.setConsultaLibre(sanitize(request.getParameter("q")));
-        criteria.setTitulo(sanitize(request.getParameter("titulo")));
-        criteria.setCategoria(sanitize(request.getParameter("categoria")));
-        criteria.setResolucion(sanitize(request.getParameter("resolucion")));
-        criteria.setFechaDesde(parseDate(request.getParameter("fechaDesde")));
-        criteria.setFechaHasta(parseDate(request.getParameter("fechaHasta")));
-        criteria.setDuracionMin(parseInteger(request.getParameter("duracionMin")));
-        criteria.setDuracionMax(parseInteger(request.getParameter("duracionMax")));
-        return criteria;
+    private String buildSearchUrl(String titulo, String autor, String year, String month, String day) {
+        StringBuilder sb = new StringBuilder(REST_BASE + "/search?");
+        if (!titulo.isBlank()) {
+            sb.append("titulo=").append(encode(titulo));
+        } else if (!autor.isBlank()) {
+            sb.append("autor=").append(encode(autor));
+        } else {
+            sb.append("year=").append(year);
+            if (!month.isBlank()) sb.append("&month=").append(month);
+            if (!day.isBlank())   sb.append("&day=").append(day);
+        }
+        return sb.toString();
     }
 
-    private void validateCriteria(videoSearchCriteria criteria, HttpServletRequest request) {
-        if (criteria.getDuracionMin() != null && criteria.getDuracionMax() != null
-                && criteria.getDuracionMin() > criteria.getDuracionMax()) {
-            request.setAttribute("error", "La duración mínima no puede ser mayor que la duración máxima.");
-            criteria.setDuracionMax(criteria.getDuracionMin());
-        }
-        if (criteria.getFechaDesde() != null && criteria.getFechaHasta() != null
-                && criteria.getFechaDesde().isAfter(criteria.getFechaHasta())) {
-            request.setAttribute("error", "La fecha desde no puede ser mayor que la fecha hasta.");
-            criteria.setFechaHasta(criteria.getFechaDesde());
-        }
+    private List<Map<String, String>> toList(JsonArray arr) {
+        List<Map<String, String>> list = new ArrayList<>();
+        for (JsonValue val : arr) list.add(toMap(val.asJsonObject()));
+        return list;
     }
 
-    private LocalDate parseDate(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return null;
+    private Map<String, String> toMap(JsonObject obj) {
+        Map<String, String> map = new LinkedHashMap<>();
+        for (String key : obj.keySet()) {
+            JsonValue v = obj.get(key);
+            map.put(key, v.getValueType() == JsonValue.ValueType.STRING
+                    ? ((JsonString) v).getString() : v.toString());
         }
+        return map;
+    }
+
+    private String apiKey(HttpServletRequest req) {
+        HttpSession s = req.getSession(false);
+        if (s == null) return "";
+        Object k = s.getAttribute("apiKey");
+        return k == null ? "" : (String) k;
+    }
+
+    private String httpGet(String urlStr, String apiKey) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Accept", "application/json");
+        if (apiKey != null && !apiKey.isBlank())
+            conn.setRequestProperty("X-API-Key", apiKey);
+        conn.setConnectTimeout(5000);
+        conn.setReadTimeout(10000);
         try {
-            return LocalDate.parse(value.trim());
-        } catch (DateTimeParseException e) {
-            return null;
+            int status = conn.getResponseCode();
+            InputStream is = (status >= 200 && status < 300) ? conn.getInputStream() : conn.getErrorStream();
+            if (is == null) throw new IOException("HTTP " + status + " from " + urlStr);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) sb.append(line);
+                if (status < 200 || status >= 300) throw new IOException("HTTP " + status + ": " + sb);
+                return sb.toString();
+            }
+        } finally {
+            conn.disconnect();
         }
     }
 
-    private Integer parseInteger(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            int parsed = Integer.parseInt(value.trim());
-            return Math.max(0, parsed);
-        } catch (NumberFormatException e) {
-            return null;
-        }
+    private String param(HttpServletRequest req, String name) {
+        String v = req.getParameter(name);
+        return v == null ? "" : v.trim();
     }
 
-    private String sanitize(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value.trim();
+    private String encode(String s) {
+        return URLEncoder.encode(s, StandardCharsets.UTF_8);
     }
 }

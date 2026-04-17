@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebFilter(urlPatterns = {"/videos", "/videos/*", "/registroVid", "/listadoVid"})
+@WebFilter(urlPatterns = {"/videos", "/videos/*", "/registroVid", "/listadoVid", "/busqueda", "/reproduccion"})
 public class AuthSessionFilter implements Filter {
     @Override
     public void doFilter(jakarta.servlet.ServletRequest request, jakarta.servlet.ServletResponse response, FilterChain chain) throws IOException, ServletException {

@@ -1,86 +1,146 @@
 package org.example.isdcmproject.controller;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import org.example.isdcmproject.config.RestConfig;
+import jakarta.json.JsonReader;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.example.isdcmproject.model.video;
-import org.example.isdcmproject.model.videoRepository;
-import org.example.isdcmproject.model.videoValidator;
-import org.example.isdcmproject.service.VideoService;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "servletRegistroVid", urlPatterns = "/registroVid")
 public class servletRegistroVid extends HttpServlet {
+
     private static final Logger LOGGER = Logger.getLogger(servletRegistroVid.class.getName());
-    private final videoRepository repository = new videoRepository();
-    private final VideoService videoService = new VideoService();
-    private final videoValidator videoValidator = new videoValidator();
+    private static final String REST_BASE = RestConfig.BASE_URL + "/videos";
 
     @Override
-    public void init() throws ServletException {
-        try {
-            repository.initializeTable();
-        } catch (SQLException e) {
-            throw new ServletException("No se pudo inicializar la tabla de videos.", e);
-        }
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.getRequestDispatcher("/WEB-INF/views/registroVid.jsp").forward(req, resp);
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("/WEB-INF/views/registroVid.jsp").forward(request, response);
-    }
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+        Map<String, String> form = extractFormData(req);
+        form.put("id", UUID.randomUUID().toString());
+        req.setAttribute("videoForm", form);
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
-        Map<String, String> formData = extractFormData(request);
-        request.setAttribute("videoForm", formData);
-
-        Map<String, String> fieldErrors = videoValidator.validate(formData);
-        if (!fieldErrors.isEmpty()) {
-            request.setAttribute("fieldErrors", fieldErrors);
-            request.setAttribute("error", "Revisa los campos marcados e inténtalo nuevamente.");
-            request.getRequestDispatcher("/WEB-INF/views/registroVid.jsp").forward(request, response);
+        Map<String, String> errors = validate(form);
+        if (!errors.isEmpty()) {
+            req.setAttribute("fieldErrors", errors);
+            req.setAttribute("error", "Revisa els camps marcats i torna-ho a intentar.");
+            req.getRequestDispatcher("/WEB-INF/views/registroVid.jsp").forward(req, resp);
             return;
         }
 
-        video video = videoValidator.toVideo(formData);
+        String json = buildJson(form);
         try {
-            video created = videoService.registerVideo(video);
-            response.sendRedirect(request.getContextPath() + "/listadoVid?created=1&videoId=" + created.getIdentificador());
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "No fue posible registrar el video.", e);
-            request.setAttribute("error", "No fue posible registrar el video. Inténtalo nuevamente.");
-            request.getRequestDispatcher("/WEB-INF/views/registroVid.jsp").forward(request, response);
+            httpPost(REST_BASE, json, apiKey(req));
+            resp.sendRedirect(req.getContextPath() + "/listadoVid?created=1");
+        } catch (IOException e) {
+            String msg = e.getMessage();
+            if (msg != null && msg.contains("HTTP 409")) {
+                req.setAttribute("error", "Ja existeix un vídeo amb aquest identificador.");
+            } else {
+                LOGGER.log(Level.SEVERE, "Error cridant REST registroVid", e);
+                req.setAttribute("error", "No s'ha pogut registrar el vídeo: " + msg);
+            }
+            req.getRequestDispatcher("/WEB-INF/views/registroVid.jsp").forward(req, resp);
         }
     }
 
-    private Map<String, String> extractFormData(HttpServletRequest request) {
-        Map<String, String> formData = new LinkedHashMap<>();
-        formData.put("titulo", sanitize(request.getParameter("titulo")));
-        formData.put("fechaCreacion", sanitize(request.getParameter("fechaCreacion")));
-        formData.put("duracion", sanitize(request.getParameter("duracion")));
-        formData.put("reproducciones", sanitize(request.getParameter("reproducciones")));
-        formData.put("descripcion", sanitize(request.getParameter("descripcion")));
-        formData.put("formato", sanitize(request.getParameter("formato")));
-        formData.put("url", sanitize(request.getParameter("url")));
-        formData.put("categoria", sanitize(request.getParameter("categoria")));
-        formData.put("resolucion", sanitize(request.getParameter("resolucion")));
-        return formData;
+    private Map<String, String> extractFormData(HttpServletRequest req) {
+        Map<String, String> form = new LinkedHashMap<>();
+        for (String field : new String[]{"titulo","autor","fechaCreacion","duracion","reproducciones","formato","url","categoria","resolucion","descripcion"}) {
+            String v = req.getParameter(field);
+            form.put(field, v == null ? "" : v.trim());
+        }
+        return form;
     }
 
-    private String sanitize(String value) {
-        if (value == null) {
-            return "";
+    private Map<String, String> validate(Map<String, String> form) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        for (String field : new String[]{"titulo","autor","fechaCreacion","duracion","formato","url","categoria","resolucion","descripcion"}) {
+            if (form.getOrDefault(field, "").isBlank())
+                errors.put(field, "Camp obligatori.");
         }
-        return value.trim();
+        if (!errors.containsKey("duracion")) {
+            try { Integer.parseInt(form.get("duracion")); }
+            catch (NumberFormatException e) { errors.put("duracion", "Ha de ser un número enter."); }
+        }
+        return errors;
+    }
+
+    private String buildJson(Map<String, String> form) {
+        int duracion = Integer.parseInt(form.get("duracion"));
+        int repros = form.get("reproducciones").isBlank() ? 0 : Integer.parseInt(form.get("reproducciones"));
+        JsonObject obj = Json.createObjectBuilder()
+                .add("id",             form.get("id"))
+                .add("titulo",         form.get("titulo"))
+                .add("autor",          form.get("autor"))
+                .add("fechaCreacion",  form.get("fechaCreacion"))
+                .add("duracion",       duracion)
+                .add("reproducciones", repros)
+                .add("descripcion",    form.get("descripcion"))
+                .add("formato",        form.get("formato"))
+                .add("url",            form.get("url"))
+                .add("categoria",      form.get("categoria"))
+                .add("resolucion",     form.get("resolucion"))
+                .build();
+        return obj.toString();
+    }
+
+    private String apiKey(HttpServletRequest req) {
+        HttpSession s = req.getSession(false);
+        if (s == null) return "";
+        Object k = s.getAttribute("apiKey");
+        return k == null ? "" : (String) k;
+    }
+
+    private void httpPost(String urlStr, String body, String apiKey) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+        conn.setRequestProperty("Accept", "application/json");
+        if (apiKey != null && !apiKey.isBlank())
+            conn.setRequestProperty("X-API-Key", apiKey);
+        conn.setDoOutput(true);
+        conn.setConnectTimeout(5000);
+        conn.setReadTimeout(10000);
+        try {
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(body.getBytes(StandardCharsets.UTF_8));
+            }
+            int status = conn.getResponseCode();
+            if (status < 200 || status >= 300) {
+                InputStream es = conn.getErrorStream();
+                String errBody = "";
+                if (es != null) {
+                    try (BufferedReader r = new BufferedReader(new InputStreamReader(es, StandardCharsets.UTF_8))) {
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = r.readLine()) != null) sb.append(line);
+                        errBody = sb.toString();
+                    }
+                }
+                throw new IOException("HTTP " + status + ": " + errBody);
+            }
+        } finally {
+            conn.disconnect();
+        }
     }
 }

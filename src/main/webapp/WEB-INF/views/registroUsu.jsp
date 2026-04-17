@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Registro</title>
+    <title>Registre</title>
     <style>
         *{
             box-sizing: border-box;
@@ -125,7 +125,7 @@
 <body>
 
 <div class="card">
-    <h2>Crear cuenta</h2>
+    <h2>Crear compte</h2>
 
     <% if (request.getAttribute("error") != null) { %>
     <div class="error"><%= request.getAttribute("error") %></div>
@@ -135,43 +135,43 @@
         <div class="grid">
 
             <div class="field full">
-                <label for="username">Usuario</label>
+                <label for="username">Usuari</label>
                 <input id="username" name="username" type="text" value="${username}" />
             </div>
 
             <div class="field">
-                <label for="nombre">Nombre</label>
+                <label for="nombre">Nom</label>
                 <input id="nombre" name="nombre" type="text" value="${nombre}" />
             </div>
 
             <div class="field">
-                <label for="apellido">Apellido</label>
+                <label for="apellido">Cognom</label>
                 <input id="apellido" name="apellido" type="text" value="${apellido}" />
             </div>
 
             <div class="field full">
-                <label for="email">Correo electrónico</label>
+                <label for="email">Correu electrònic</label>
                 <input id="email" name="email" type="text" value="${email}" />
             </div>
 
             <div class="field full">
-                <label for="password">Contraseña</label>
+                <label for="password">Contrasenya</label>
                 <input id="password" name="password" type="password" />
             </div>
 
             <div class="field full">
-                <label for="confirmPassword">Confirmar contraseña</label>
+                <label for="confirmPassword">Confirmar contrasenya</label>
                 <input id="confirmPassword" name="confirmPassword" type="password" />
             </div>
         </div>
 
         <div class="actions">
-            <button type="submit">Crear cuenta</button>
+            <button type="submit">Crear compte</button>
         </div>
     </form>
 
-    <p>¿Ya tienes cuenta?
-        <a href="<%= request.getContextPath() %>/login">Iniciar sesión</a>
+    <p>Ja tens compte?
+        <a href="<%= request.getContextPath() %>/login">Inicia sessió</a>
     </p>
 </div>
 
