@@ -49,6 +49,7 @@
     <div class="header">
         <h2>Llistat de vídeos</h2>
         <div class="actions">
+            <a class="button" href="<%= request.getContextPath() %>/busqueda">Cercar vídeo</a>
             <a class="button" href="<%= request.getContextPath() %>/registroVid">Nou vídeo</a>
             <a class="link"   href="<%= request.getContextPath() %>/logout">Tancar sessió</a>
         </div>
