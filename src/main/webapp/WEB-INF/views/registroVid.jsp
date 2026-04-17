@@ -158,11 +158,6 @@
     <form method="post" action="<%= request.getContextPath() %>/registroVid">
         <div class="grid">
             <div class="field">
-                <label for="identificador">Identificador único</label>
-                <input id="identificador" name="identificador" type="text" value="<%= form.getOrDefault("identificador", "") %>" />
-                <% if (fieldErrors.get("identificador") != null) { %><div class="fieldError"><%= fieldErrors.get("identificador") %></div><% } %>
-            </div>
-            <div class="field">
                 <label for="titulo">Título</label>
                 <input id="titulo" name="titulo" type="text" value="<%= form.getOrDefault("titulo", "") %>" />
                 <% if (fieldErrors.get("titulo") != null) { %><div class="fieldError"><%= fieldErrors.get("titulo") %></div><% } %>
@@ -193,9 +188,14 @@
                 <% if (fieldErrors.get("url") != null) { %><div class="fieldError"><%= fieldErrors.get("url") %></div><% } %>
             </div>
             <div class="field full">
-                <label for="categoria">Categoría / tags</label>
+                <label for="categoria">Categoría</label>
                 <input id="categoria" name="categoria" type="text" value="<%= form.getOrDefault("categoria", "") %>" />
                 <% if (fieldErrors.get("categoria") != null) { %><div class="fieldError"><%= fieldErrors.get("categoria") %></div><% } %>
+            </div>
+            <div class="field">
+                <label for="resolucion">Resolución</label>
+                <input id="resolucion" name="resolucion" type="text" placeholder="1080p" value="<%= form.getOrDefault("resolucion", "") %>" />
+                <% if (fieldErrors.get("resolucion") != null) { %><div class="fieldError"><%= fieldErrors.get("resolucion") %></div><% } %>
             </div>
             <div class="field full">
                 <label for="descripcion">Descripción</label>

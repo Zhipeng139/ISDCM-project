@@ -12,11 +12,12 @@ public class video {
     private String formato;
     private String url;
     private String categoria;
+    private String resolucion;
 
     public video() {
     }
 
-    public video(String identificador, String titulo, LocalDate fechaCreacion, int duracion, int reproducciones, String descripcion, String formato, String url, String categoria) {
+    public video(String identificador, String titulo, LocalDate fechaCreacion, int duracion, int reproducciones, String descripcion, String formato, String url, String categoria, String resolucion) {
         this.identificador = identificador;
         this.titulo = titulo;
         this.fechaCreacion = fechaCreacion;
@@ -26,6 +27,7 @@ public class video {
         this.formato = formato;
         this.url = url;
         this.categoria = categoria;
+        this.resolucion = resolucion;
     }
 
     public String getIdentificador() {
@@ -98,5 +100,13 @@ public class video {
 
     public void setCategoria(String categoria) {
         this.categoria = categoria;
+    }
+
+    public String getResolucion() {
+        return resolucion;
+    }
+
+    public void setResolucion(String resolucion) {
+        this.resolucion = resolucion;
     }
 }

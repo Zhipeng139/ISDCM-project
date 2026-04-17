@@ -1,7 +1,6 @@
 package org.example.isdcmproject.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.LinkedHashMap;
@@ -15,7 +14,6 @@ public class videoValidatorTest {
     @Test
     void shouldRejectEmptyFields() {
         Map<String, String> form = new LinkedHashMap<>();
-        form.put("identificador", "");
         form.put("titulo", "");
         form.put("fechaCreacion", "");
         form.put("duracion", "");
@@ -24,11 +22,11 @@ public class videoValidatorTest {
         form.put("formato", "");
         form.put("url", "");
         form.put("categoria", "");
+        form.put("resolucion", "");
 
         Map<String, String> errors = validator.validate(form);
 
         assertEquals(9, errors.size());
-        assertTrue(errors.containsKey("identificador"));
         assertTrue(errors.containsKey("titulo"));
         assertTrue(errors.containsKey("fechaCreacion"));
         assertTrue(errors.containsKey("duracion"));
@@ -37,12 +35,12 @@ public class videoValidatorTest {
         assertTrue(errors.containsKey("formato"));
         assertTrue(errors.containsKey("url"));
         assertTrue(errors.containsKey("categoria"));
+        assertTrue(errors.containsKey("resolucion"));
     }
 
     @Test
     void shouldRejectInvalidFormats() {
         Map<String, String> form = new LinkedHashMap<>();
-        form.put("identificador", "vid-1");
         form.put("titulo", "Video");
         form.put("fechaCreacion", "2026-20-55");
         form.put("duracion", "-10");
@@ -51,6 +49,7 @@ public class videoValidatorTest {
         form.put("formato", "mp4");
         form.put("url", "no-url");
         form.put("categoria", "music");
+        form.put("resolucion", "1080p");
 
         Map<String, String> errors = validator.validate(form);
 
@@ -63,7 +62,6 @@ public class videoValidatorTest {
     @Test
     void shouldValidateCorrectForm() {
         Map<String, String> form = new LinkedHashMap<>();
-        form.put("identificador", "vid-1");
         form.put("titulo", "Video");
         form.put("fechaCreacion", "2026-03-20");
         form.put("duracion", "120");
@@ -72,15 +70,16 @@ public class videoValidatorTest {
         form.put("formato", "mp4");
         form.put("url", "https://example.com/video");
         form.put("categoria", "music");
+        form.put("resolucion", "1080p");
 
         Map<String, String> errors = validator.validate(form);
 
-        assertFalse(errors.containsKey("identificador"));
         assertTrue(errors.isEmpty());
         video video = validator.toVideo(form);
-        assertEquals("vid-1", video.getIdentificador());
+        assertEquals("", video.getIdentificador());
         assertEquals("Video", video.getTitulo());
         assertEquals(120, video.getDuracion());
         assertEquals(10, video.getReproducciones());
+        assertEquals("1080p", video.getResolucion());
     }
 }

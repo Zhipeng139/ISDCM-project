@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,10 +15,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.example.isdcmproject.model.video;
 import org.example.isdcmproject.model.videoRepository;
 import org.example.isdcmproject.model.videoValidator;
+import org.example.isdcmproject.service.VideoService;
 
 @WebServlet(name = "servletRegistroVid", urlPatterns = "/registroVid")
 public class servletRegistroVid extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(servletRegistroVid.class.getName());
     private final videoRepository repository = new videoRepository();
+    private final VideoService videoService = new VideoService();
     private final videoValidator videoValidator = new videoValidator();
 
     @Override
@@ -49,16 +54,10 @@ public class servletRegistroVid extends HttpServlet {
 
         video video = videoValidator.toVideo(formData);
         try {
-            videoRepository.SaveVideoResult result = repository.save(video);
-            if (result == videoRepository.SaveVideoResult.DUPLICATE_ID) {
-                fieldErrors.put("identificador", "El identificador ya existe. Debe ser único.");
-                request.setAttribute("fieldErrors", fieldErrors);
-                request.setAttribute("error", "No fue posible registrar el video.");
-                request.getRequestDispatcher("/WEB-INF/views/registroVid.jsp").forward(request, response);
-                return;
-            }
-            response.sendRedirect(request.getContextPath() + "/listadoVid?created=1");
+            video created = videoService.registerVideo(video);
+            response.sendRedirect(request.getContextPath() + "/listadoVid?created=1&videoId=" + created.getIdentificador());
         } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "No fue posible registrar el video.", e);
             request.setAttribute("error", "No fue posible registrar el video. Inténtalo nuevamente.");
             request.getRequestDispatcher("/WEB-INF/views/registroVid.jsp").forward(request, response);
         }
@@ -66,7 +65,6 @@ public class servletRegistroVid extends HttpServlet {
 
     private Map<String, String> extractFormData(HttpServletRequest request) {
         Map<String, String> formData = new LinkedHashMap<>();
-        formData.put("identificador", sanitize(request.getParameter("identificador")));
         formData.put("titulo", sanitize(request.getParameter("titulo")));
         formData.put("fechaCreacion", sanitize(request.getParameter("fechaCreacion")));
         formData.put("duracion", sanitize(request.getParameter("duracion")));
@@ -75,6 +73,7 @@ public class servletRegistroVid extends HttpServlet {
         formData.put("formato", sanitize(request.getParameter("formato")));
         formData.put("url", sanitize(request.getParameter("url")));
         formData.put("categoria", sanitize(request.getParameter("categoria")));
+        formData.put("resolucion", sanitize(request.getParameter("resolucion")));
         return formData;
     }
 

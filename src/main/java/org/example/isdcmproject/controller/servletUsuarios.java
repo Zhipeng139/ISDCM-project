@@ -124,7 +124,7 @@ public class servletUsuarios extends HttpServlet {
     }
 
     private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String username = sanitize(request.getParameter("username"));
+        String username = sanitize(request.getParameter("username")).toLowerCase();
         String password = request.getParameter("password");
 
         request.setAttribute("username", username);

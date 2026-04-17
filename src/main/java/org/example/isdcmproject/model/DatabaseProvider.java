@@ -9,7 +9,7 @@ public final class DatabaseProvider {
     private static final String CLIENT_DRIVER = "org.apache.derby.jdbc.ClientDriver";
     private static final String EMBEDDED_DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
     private static final String NETWORK_URL = "jdbc:derby://localhost:1527/pr2;create=true";
-    private static final String EMBEDDED_URL = "jdbc:derby:/Users/zhiweilin/MEI/ISDCM/Project/pr2;create=true";
+    private static final String EMBEDDED_URL = "jdbc:derby:pr2;create=true";
 
     static {
         try {

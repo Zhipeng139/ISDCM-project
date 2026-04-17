@@ -10,7 +10,6 @@ public class videoValidator {
     public Map<String, String> validate(Map<String, String> formData) {
         Map<String, String> fieldErrors = new LinkedHashMap<>();
 
-        String identificador = sanitize(formData.get("identificador"));
         String titulo = sanitize(formData.get("titulo"));
         String fechaCreacion = sanitize(formData.get("fechaCreacion"));
         String duracion = sanitize(formData.get("duracion"));
@@ -19,10 +18,8 @@ public class videoValidator {
         String formato = sanitize(formData.get("formato"));
         String url = sanitize(formData.get("url"));
         String categoria = sanitize(formData.get("categoria"));
+        String resolucion = sanitize(formData.get("resolucion"));
 
-        if (isBlank(identificador)) {
-            fieldErrors.put("identificador", "El identificador es obligatorio.");
-        }
         if (isBlank(titulo)) {
             fieldErrors.put("titulo", "El título es obligatorio.");
         }
@@ -51,12 +48,15 @@ public class videoValidator {
         if (isBlank(categoria)) {
             fieldErrors.put("categoria", "La categoría es obligatoria.");
         }
+        if (isBlank(resolucion)) {
+            fieldErrors.put("resolucion", "La resolución es obligatoria.");
+        }
         return fieldErrors;
     }
 
     public video toVideo(Map<String, String> formData) {
         return new video(
-                sanitize(formData.get("identificador")),
+                "",
                 sanitize(formData.get("titulo")),
                 LocalDate.parse(sanitize(formData.get("fechaCreacion"))),
                 Integer.parseInt(sanitize(formData.get("duracion"))),
@@ -64,7 +64,8 @@ public class videoValidator {
                 sanitize(formData.get("descripcion")),
                 sanitize(formData.get("formato")),
                 sanitize(formData.get("url")),
-                sanitize(formData.get("categoria"))
+                sanitize(formData.get("categoria")),
+                sanitize(formData.get("resolucion"))
         );
     }
 
