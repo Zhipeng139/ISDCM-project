@@ -46,7 +46,7 @@ public class servletUsuarios extends HttpServlet {
             return;
         }
         if (session != null && session.getAttribute("usuarioLogueado") != null) {
-            response.sendRedirect(request.getContextPath() + "/videos");
+            response.sendRedirect(request.getContextPath() + "/listadoVid");
             return;
         }
         if ("1".equals(request.getParameter("registered"))) {
@@ -144,7 +144,7 @@ public class servletUsuarios extends HttpServlet {
             }
             HttpSession session = request.getSession(true);
             session.setAttribute("usuarioLogueado", username);
-            response.sendRedirect(request.getContextPath() + "/videos");
+            response.sendRedirect(request.getContextPath() + "/listadoVid");
         } catch (SQLException e) {
             request.setAttribute("error", "No fue posible iniciar sesión. Intenta nuevamente.");
             request.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(request, response);
