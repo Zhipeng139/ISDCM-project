@@ -3,12 +3,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Registro de Video</title>
+    <title>Registro de Vídeo</title>
     <style>
+        /* Reset */
         * {
             box-sizing: border-box;
         }
 
+        /* Layout */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #74ebd5, #ACB6E5);
@@ -20,6 +22,7 @@
             padding: 24px 12px;
         }
 
+        /* Card */
         .card {
             background: #fff;
             max-width: 760px;
@@ -36,6 +39,21 @@
             font-size: 28px;
         }
 
+        /* Top bar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .link {
+            color: #666;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        /* Form grid */
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -65,8 +83,8 @@
             border: 1px solid #ccc;
             border-radius: 10px;
             font-size: 14px;
-            transition: border 0.3s, box-shadow 0.3s;
             font-family: inherit;
+            transition: border 0.3s, box-shadow 0.3s;
         }
 
         .field textarea {
@@ -81,6 +99,7 @@
             outline: none;
         }
 
+        /* Messages */
         .error {
             color: #b00020;
             margin-bottom: 12px;
@@ -94,6 +113,7 @@
             font-weight: 500;
         }
 
+        /* Form actions */
         .actions {
             margin-top: 20px;
             display: flex;
@@ -104,6 +124,7 @@
 
         .button {
             display: inline-block;
+            padding: 12px 16px;
             border: none;
             border-radius: 8px;
             background: #74ebd5;
@@ -112,24 +133,10 @@
             text-decoration: none;
             cursor: pointer;
             transition: background 0.3s;
-            padding: 12px 16px;
         }
 
         .button:hover {
             background: #4ac1b8;
-        }
-
-        .link {
-            color: #666;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
         }
     </style>
 </head>
@@ -137,19 +144,15 @@
 <%
     Map<String, String> form = (Map<String, String>) request.getAttribute("videoForm");
     Map<String, String> fieldErrors = (Map<String, String>) request.getAttribute("fieldErrors");
-    if (form == null) {
-        form = new java.util.LinkedHashMap<>();
-    }
-    if (fieldErrors == null) {
-        fieldErrors = new java.util.LinkedHashMap<>();
-    }
+    if (form == null) form = new java.util.LinkedHashMap<>();
+    if (fieldErrors == null) fieldErrors = new java.util.LinkedHashMap<>();
 %>
 <div class="card">
     <div class="topbar">
-        <a class="link" href="<%= request.getContextPath() %>/listadoVid">← Tornar al llistat</a>
-        <a class="link" href="<%= request.getContextPath() %>/logout">Tancar sessió</a>
+        <a class="link" href="<%= request.getContextPath() %>/listadoVid">← Volver al listado</a>
+        <a class="link" href="<%= request.getContextPath() %>/logout">Cerrar sesión</a>
     </div>
-    <h2>Registre de vídeo</h2>
+    <h2>Registro de vídeo</h2>
 
     <% if (request.getAttribute("error") != null) { %>
     <div class="error"><%= request.getAttribute("error") %></div>
@@ -158,7 +161,7 @@
     <form method="post" action="<%= request.getContextPath() %>/registroVid">
         <div class="grid">
             <div class="field">
-                <label for="titulo">Títol</label>
+                <label for="titulo">Título</label>
                 <input id="titulo" name="titulo" type="text" value="<%= form.getOrDefault("titulo", "") %>" />
                 <% if (fieldErrors.get("titulo") != null) { %><div class="fieldError"><%= fieldErrors.get("titulo") %></div><% } %>
             </div>
@@ -168,28 +171,28 @@
                 <% if (fieldErrors.get("autor") != null) { %><div class="fieldError"><%= fieldErrors.get("autor") %></div><% } %>
             </div>
             <div class="field">
-                <label for="fechaCreacion">Data de creació</label>
+                <label for="fechaCreacion">Fecha de creación</label>
                 <input id="fechaCreacion" name="fechaCreacion" type="date" value="<%= form.getOrDefault("fechaCreacion", "") %>" />
                 <% if (fieldErrors.get("fechaCreacion") != null) { %><div class="fieldError"><%= fieldErrors.get("fechaCreacion") %></div><% } %>
             </div>
             <div class="field">
-                <label for="duracion">Duració (segons)</label>
+                <label for="duracion">Duración (segundos)</label>
                 <input id="duracion" name="duracion" type="number" min="0" value="<%= form.getOrDefault("duracion", "") %>" />
                 <% if (fieldErrors.get("duracion") != null) { %><div class="fieldError"><%= fieldErrors.get("duracion") %></div><% } %>
             </div>
             <div class="field">
-                <label for="reproducciones">Reproduccions inicials</label>
+                <label for="reproducciones">Reproducciones iniciales</label>
                 <input id="reproducciones" name="reproducciones" type="number" min="0" value="<%= form.getOrDefault("reproducciones", "0") %>" />
                 <% if (fieldErrors.get("reproducciones") != null) { %><div class="fieldError"><%= fieldErrors.get("reproducciones") %></div><% } %>
             </div>
             <div class="field">
-                <label for="formato">Format</label>
-                <input id="formato" name="formato" type="text" placeholder="ex: MP4" value="<%= form.getOrDefault("formato", "") %>" />
+                <label for="formato">Formato</label>
+                <input id="formato" name="formato" type="text" placeholder="ej: MP4" value="<%= form.getOrDefault("formato", "") %>" />
                 <% if (fieldErrors.get("formato") != null) { %><div class="fieldError"><%= fieldErrors.get("formato") %></div><% } %>
             </div>
             <div class="field">
-                <label for="resolucion">Resolució</label>
-                <input id="resolucion" name="resolucion" type="text" placeholder="ex: 1080p" value="<%= form.getOrDefault("resolucion", "") %>" />
+                <label for="resolucion">Resolución</label>
+                <input id="resolucion" name="resolucion" type="text" placeholder="ej: 1080p" value="<%= form.getOrDefault("resolucion", "") %>" />
                 <% if (fieldErrors.get("resolucion") != null) { %><div class="fieldError"><%= fieldErrors.get("resolucion") %></div><% } %>
             </div>
             <div class="field full">
@@ -198,19 +201,18 @@
                 <% if (fieldErrors.get("url") != null) { %><div class="fieldError"><%= fieldErrors.get("url") %></div><% } %>
             </div>
             <div class="field full">
-                <label for="categoria">Categoria</label>
+                <label for="categoria">Categoría</label>
                 <input id="categoria" name="categoria" type="text" value="<%= form.getOrDefault("categoria", "") %>" />
                 <% if (fieldErrors.get("categoria") != null) { %><div class="fieldError"><%= fieldErrors.get("categoria") %></div><% } %>
             </div>
             <div class="field full">
-                <label for="descripcion">Descripció</label>
+                <label for="descripcion">Descripción</label>
                 <textarea id="descripcion" name="descripcion"><%= form.getOrDefault("descripcion", "") %></textarea>
                 <% if (fieldErrors.get("descripcion") != null) { %><div class="fieldError"><%= fieldErrors.get("descripcion") %></div><% } %>
             </div>
         </div>
-
         <div class="actions">
-            <a class="link" href="<%= request.getContextPath() %>/listadoVid">Cancel·lar</a>
+            <a class="link" href="<%= request.getContextPath() %>/listadoVid">Cancelar</a>
             <button class="button" type="submit">Registrar vídeo</button>
         </div>
     </form>

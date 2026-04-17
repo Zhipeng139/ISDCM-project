@@ -2,12 +2,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Registre</title>
+    <title>Registro</title>
     <style>
-        *{
+        /* Reset */
+        * {
             box-sizing: border-box;
         }
 
+        /* Layout */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #74ebd5, #ACB6E5);
@@ -18,6 +20,7 @@
             margin: 0;
         }
 
+        /* Card */
         .card {
             background: #fff;
             max-width: 500px;
@@ -34,6 +37,7 @@
             font-size: 28px;
         }
 
+        /* Form grid */
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -71,12 +75,14 @@
             outline: none;
         }
 
+        /* Messages */
         .error {
             color: #b00020;
             margin-bottom: 12px;
             font-weight: 500;
         }
 
+        /* Submit button */
         .actions {
             margin-top: 20px;
         }
@@ -98,6 +104,7 @@
             background: #4ac1b8;
         }
 
+        /* Footer link */
         p {
             margin-top: 20px;
             font-size: 14px;
@@ -115,6 +122,7 @@
             color: #4ac1b8;
         }
 
+        /* Mobile */
         @media (max-width: 480px) {
             .grid {
                 grid-template-columns: 1fr;
@@ -123,9 +131,8 @@
     </style>
 </head>
 <body>
-
 <div class="card">
-    <h2>Crear compte</h2>
+    <h2>Crear cuenta</h2>
 
     <% if (request.getAttribute("error") != null) { %>
     <div class="error"><%= request.getAttribute("error") %></div>
@@ -133,47 +140,37 @@
 
     <form method="post" action="<%= request.getContextPath() %>/registroUsu">
         <div class="grid">
-
             <div class="field full">
-                <label for="username">Usuari</label>
+                <label for="username">Usuario</label>
                 <input id="username" name="username" type="text" value="${username}" />
             </div>
-
             <div class="field">
-                <label for="nombre">Nom</label>
+                <label for="nombre">Nombre</label>
                 <input id="nombre" name="nombre" type="text" value="${nombre}" />
             </div>
-
             <div class="field">
-                <label for="apellido">Cognom</label>
+                <label for="apellido">Apellido</label>
                 <input id="apellido" name="apellido" type="text" value="${apellido}" />
             </div>
-
             <div class="field full">
-                <label for="email">Correu electrònic</label>
+                <label for="email">Correo electrónico</label>
                 <input id="email" name="email" type="text" value="${email}" />
             </div>
-
             <div class="field full">
-                <label for="password">Contrasenya</label>
+                <label for="password">Contraseña</label>
                 <input id="password" name="password" type="password" />
             </div>
-
             <div class="field full">
-                <label for="confirmPassword">Confirmar contrasenya</label>
+                <label for="confirmPassword">Confirmar contraseña</label>
                 <input id="confirmPassword" name="confirmPassword" type="password" />
             </div>
         </div>
-
         <div class="actions">
-            <button type="submit">Crear compte</button>
+            <button type="submit">Crear cuenta</button>
         </div>
     </form>
 
-    <p>Ja tens compte?
-        <a href="<%= request.getContextPath() %>/login">Inicia sessió</a>
-    </p>
+    <p>¿Ya tienes cuenta? <a href="<%= request.getContextPath() %>/login">Iniciar sesión</a></p>
 </div>
-
 </body>
 </html>

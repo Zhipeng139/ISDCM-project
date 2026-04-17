@@ -47,9 +47,9 @@ public class servletUsuarios extends HttpServlet {
             return;
         }
         if ("1".equals(req.getParameter("registered")))
-            req.setAttribute("success", "Registre completat. Ara pots iniciar sessió.");
+            req.setAttribute("success", "Registro completado. Ahora puedes iniciar sesión.");
         if ("required".equals(req.getParameter("auth")))
-            req.setAttribute("error", "Has d'iniciar sessió per accedir a la gestió de vídeos.");
+            req.setAttribute("error", "Debes iniciar sesión para acceder a la gestión de vídeos.");
         req.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(req, resp);
     }
 
@@ -70,7 +70,7 @@ public class servletUsuarios extends HttpServlet {
         req.setAttribute("username", username);
 
         if (username.isBlank() || password == null || password.isBlank()) {
-            req.setAttribute("error", "Has de completar usuari i contrasenya.");
+            req.setAttribute("error", "Debes completar usuario y contraseña.");
             req.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(req, resp);
             return;
         }
@@ -91,10 +91,10 @@ public class servletUsuarios extends HttpServlet {
         } catch (IOException e) {
             String msg = e.getMessage();
             if (msg != null && msg.contains("HTTP 401")) {
-                req.setAttribute("error", "Credencials incorrectes.");
+                req.setAttribute("error", "Credenciales incorrectas.");
             } else {
                 LOGGER.log(Level.SEVERE, "Error REST login", e);
-                req.setAttribute("error", "No s'ha pogut iniciar sessió. Torna-ho a intentar.");
+                req.setAttribute("error", "No fue posible iniciar sesión. Inténtalo de nuevo.");
             }
             req.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(req, resp);
         }
@@ -135,15 +135,15 @@ public class servletUsuarios extends HttpServlet {
             String error;
             if (msg != null && msg.contains("HTTP 409")) {
                 if (msg.toLowerCase().contains("username")) {
-                    error = "El nom d'usuari ja està en ús.";
+                    error = "El nombre de usuario ya está en uso.";
                 } else if (msg.toLowerCase().contains("email")) {
-                    error = "El correu electrònic ja està en ús.";
+                    error = "El correo electrónico ya está en uso.";
                 } else {
-                    error = "L'usuari o el correu ja existeixen.";
+                    error = "El usuario o el correo ya existen.";
                 }
             } else {
                 LOGGER.log(Level.SEVERE, "Error REST registre", e);
-                error = "No s'ha pogut crear el compte. Torna-ho a intentar.";
+                error = "No fue posible crear la cuenta. Inténtalo de nuevo.";
             }
             req.setAttribute("error", error);
             req.getRequestDispatcher("/WEB-INF/views/registroUsu.jsp").forward(req, resp);
@@ -155,15 +155,15 @@ public class servletUsuarios extends HttpServlet {
         if (nombre.isBlank() || apellido.isBlank() || email.isBlank() ||
             username.isBlank() || password == null || password.isBlank() ||
             confirm == null || confirm.isBlank())
-            return "Tots els camps son obligatoris.";
+            return "Todos los campos son obligatorios.";
         if (!EMAIL_PATTERN.matcher(email).matches())
-            return "El format del correu electrònic no és vàlid.";
+            return "El formato del correo electrónico no es válido.";
         if (!USERNAME_PATTERN.matcher(username).matches())
-            return "L'usuari ha de tenir entre 4 i 20 caràcters alfanumèrics.";
+            return "El usuario debe tener entre 4 y 20 caracteres alfanuméricos.";
         if (password.length() < 6)
-            return "La contrasenya ha de tenir almenys 6 caràcters.";
+            return "La contraseña debe tener al menos 6 caracteres.";
         if (!password.equals(confirm))
-            return "Les contrasenyes no coincideixen.";
+            return "Las contraseñas no coinciden.";
         return null;
     }
 

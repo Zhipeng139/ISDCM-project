@@ -42,7 +42,7 @@ public class servletRegistroVid extends HttpServlet {
         Map<String, String> errors = validate(form);
         if (!errors.isEmpty()) {
             req.setAttribute("fieldErrors", errors);
-            req.setAttribute("error", "Revisa els camps marcats i torna-ho a intentar.");
+            req.setAttribute("error", "Revisa los campos marcados e inténtalo de nuevo.");
             req.getRequestDispatcher("/WEB-INF/views/registroVid.jsp").forward(req, resp);
             return;
         }
@@ -54,7 +54,7 @@ public class servletRegistroVid extends HttpServlet {
         } catch (IOException e) {
             String msg = e.getMessage();
             if (msg != null && msg.contains("HTTP 409")) {
-                req.setAttribute("error", "Ja existeix un vídeo amb aquest identificador.");
+                req.setAttribute("error", "Ya existe un vídeo con este identificador.");
             } else {
                 LOGGER.log(Level.SEVERE, "Error cridant REST registroVid", e);
                 req.setAttribute("error", "No s'ha pogut registrar el vídeo: " + msg);
@@ -76,11 +76,11 @@ public class servletRegistroVid extends HttpServlet {
         Map<String, String> errors = new LinkedHashMap<>();
         for (String field : new String[]{"titulo","autor","fechaCreacion","duracion","formato","url","categoria","resolucion","descripcion"}) {
             if (form.getOrDefault(field, "").isBlank())
-                errors.put(field, "Camp obligatori.");
+                errors.put(field, "Campo obligatorio.");
         }
         if (!errors.containsKey("duracion")) {
             try { Integer.parseInt(form.get("duracion")); }
-            catch (NumberFormatException e) { errors.put("duracion", "Ha de ser un número enter."); }
+            catch (NumberFormatException e) { errors.put("duracion", "Debe ser un número entero."); }
         }
         return errors;
     }

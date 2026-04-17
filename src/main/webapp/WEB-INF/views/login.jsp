@@ -2,9 +2,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Iniciar sessió</title>
+    <title>Iniciar sesión</title>
     <style>
-        /* Reset y estilo general */
+        /* Reset */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Layout */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #74ebd5, #ACB6E5);
@@ -15,7 +20,7 @@
             margin: 0;
         }
 
-        /* Tarjeta de login */
+        /* Card */
         .card {
             background: #fff;
             max-width: 400px;
@@ -32,10 +37,11 @@
             font-size: 28px;
         }
 
+        /* Form fields */
         .field {
             margin-bottom: 16px;
             text-align: left;
-            margin-right: 20px;
+            margin-right: 10px;
         }
 
         .field label {
@@ -60,6 +66,7 @@
             outline: none;
         }
 
+        /* Messages */
         .error {
             color: #b00020;
             margin-bottom: 12px;
@@ -72,8 +79,10 @@
             font-weight: 500;
         }
 
+        /* Submit button */
         .actions {
             margin-top: 20px;
+            margin-right: 10px;
         }
 
         .actions button {
@@ -93,6 +102,7 @@
             background: #4ac1b8;
         }
 
+        /* Footer link */
         p {
             margin-top: 20px;
             font-size: 14px;
@@ -110,6 +120,7 @@
             color: #4ac1b8;
         }
 
+        /* Mobile */
         @media (max-width: 480px) {
             .card {
                 padding: 25px 15px;
@@ -123,7 +134,7 @@
 </head>
 <body>
 <div class="card">
-    <h2>Iniciar sessió</h2>
+    <h2>Iniciar sesión</h2>
     <% if (request.getAttribute("error") != null) { %>
     <div class="error"><%= request.getAttribute("error") %></div>
     <% } %>
@@ -133,20 +144,19 @@
 
     <form method="post" action="<%= request.getContextPath() %>/login">
         <div class="field">
-            <label for="username">Usuari</label>
+            <label for="username">Usuario</label>
             <input id="username" name="username" type="text" value="${username}" />
         </div>
         <div class="field">
-            <label for="password">Contrasenya</label>
+            <label for="password">Contraseña</label>
             <input id="password" name="password" type="password" />
         </div>
         <div class="actions">
             <button type="submit">Entrar</button>
-
         </div>
     </form>
 
-    <p>No tens compte? <a href="<%= request.getContextPath() %>/registroUsu">Registra't</a></p>
+    <p>¿No tienes cuenta? <a href="<%= request.getContextPath() %>/registroUsu">Regístrate</a></p>
 </div>
 </body>
 </html>
