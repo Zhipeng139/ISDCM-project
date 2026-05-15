@@ -19,11 +19,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-@WebServlet(name = "servletUsuarios", urlPatterns = {"/login", "/registroUsu", "/logout"})
+@WebServlet(name = "servletUsuarios", urlPatterns = {"/login", "/registroUsu", "/logout", "/tokenJwt"})
 public class servletUsuarios extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(servletUsuarios.class.getName());
     private static final String REST_BASE = RestConfig.BASE_URL + "/usuaris";
+    private static final String LOGIN_URL = RestConfig.BASE_URL + "/login";
 
     private static final Pattern EMAIL_PATTERN   = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
     private static final Pattern USERNAME_PATTERN = Pattern.compile("^[A-Za-z0-9._-]{4,20}$");
@@ -36,6 +37,14 @@ public class servletUsuarios extends HttpServlet {
         if ("/logout".equals(path)) {
             if (session != null) session.invalidate();
             resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+        if ("/tokenJwt".equals(path)) {
+            if (session == null || session.getAttribute("usuarioLogueado") == null) {
+                resp.sendRedirect(req.getContextPath() + "/login?auth=required");
+                return;
+            }
+            req.getRequestDispatcher("/WEB-INF/views/tokenJwt.jsp").forward(req, resp);
             return;
         }
         if ("/registroUsu".equals(path)) {
@@ -75,19 +84,22 @@ public class servletUsuarios extends HttpServlet {
             return;
         }
 
-        String json = Json.createObjectBuilder()
-                .add("username", username)
-                .add("password", password)
-                .build().toString();
+        String formBody = "username=" + java.net.URLEncoder.encode(username, StandardCharsets.UTF_8)
+                + "&password=" + java.net.URLEncoder.encode(password, StandardCharsets.UTF_8);
         try {
-            String body = httpPost(REST_BASE + "/login", json);
+            String body = httpPostForm(LOGIN_URL, formBody);
             HttpSession session = req.getSession(true);
             session.setAttribute("usuarioLogueado", username);
             try (JsonReader jr = Json.createReader(new StringReader(body))) {
                 JsonObject obj = jr.readObject();
                 session.setAttribute("apiKey", obj.getString("apiKey", ""));
+                session.setAttribute("jwt", obj.getString("token", ""));
+                session.setAttribute("jwe", obj.getString("tokenJwe", ""));
+                session.setAttribute("jwsSecret", obj.getString("jwsSecret", ""));
+                session.setAttribute("jweKey", obj.getString("jweKey", ""));
+                session.setAttribute("jweJwk", obj.getString("jweJwk", ""));
             }
-            resp.sendRedirect(req.getContextPath() + "/listadoVid");
+            resp.sendRedirect(req.getContextPath() + "/tokenJwt");
         } catch (IOException e) {
             String msg = e.getMessage();
             if (msg != null && msg.contains("HTTP 401")) {
@@ -167,10 +179,18 @@ public class servletUsuarios extends HttpServlet {
         return null;
     }
 
+    private String httpPostForm(String urlStr, String body) throws IOException {
+        return doPost(urlStr, body, "application/x-www-form-urlencoded; charset=UTF-8");
+    }
+
     private String httpPost(String urlStr, String body) throws IOException {
+        return doPost(urlStr, body, "application/json; charset=UTF-8");
+    }
+
+    private String doPost(String urlStr, String body, String contentType) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
         conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+        conn.setRequestProperty("Content-Type", contentType);
         conn.setRequestProperty("Accept", "application/json");
         conn.setDoOutput(true);
         conn.setConnectTimeout(5000);
