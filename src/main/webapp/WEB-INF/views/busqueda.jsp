@@ -188,6 +188,7 @@
         <h2>Búsqueda de vídeos</h2>
         <div style="display:flex;gap:10px;align-items:center;">
             <a class="button" href="<%= request.getContextPath() %>/listadoVid">Listado completo</a>
+            <a class="button" href="<%= request.getContextPath() %>/cifrado">Cifrado</a>
             <a class="link"   href="<%= request.getContextPath() %>/logout">Cerrar sesión</a>
         </div>
     </div>
